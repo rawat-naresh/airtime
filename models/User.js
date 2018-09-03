@@ -26,6 +26,6 @@ let UserSchema = new Schema({
 
 });
 
-UserCredentialSchema.plugin(uniqueValidator, {message: 'is already taken.'});
+UserSchema.plugin(uniqueValidator, {message: 'is already taken.'});
 
 module.exports = mongoose.model('User',UserSchema);
