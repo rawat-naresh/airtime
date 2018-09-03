@@ -1,7 +1,10 @@
 let router = require('express').Router();
 let passport = require('../../config/passport');
+let User = require('../../models/User');
+let UserCredential = require('../../models/UserCredential');
 
-router.get('', function(req, res, next) {
+
+router.get('/', function(req, res, next) {
     res.json({success:{message:'this is user home'}});
 });
 
@@ -19,6 +22,27 @@ router.post('users/login', function(req, res, next) {
             return res.status(422).json(info);
         }
     })
+});
+
+router.post('users/signup', function(req, res, next) {
+    let user = new User();
+    let userCredential = new UserCredential();
+    
+    user.firstname = req.body.user.firstname;
+    user.lastname = req.body.user.lastname;
+    user.username = req.body.user.username;
+
+    userCredential.email = req.body.user.email;
+    userCredential.password = userCredential.setPassword(req.body.user.password);
+
+    userCredential.save().then(function() {
+        user.save().then(function() {
+            return res.json({user: userCredential.toAuthJSON()});
+        }).catch(next);
+    }).catch(next)
+
+
+
 });
 
 module.exports = router;
