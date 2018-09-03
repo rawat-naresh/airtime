@@ -14,14 +14,14 @@ let UserSchema = new Schema({
     contact:{type: String, match: [/^[0-9]+$/, 'is invalid']},
     profile:String,
     wall:String,
-    followers:[{type: Schema.Types.ObjectId, ref: ''}],
-    following:[{type: Schema.Types.ObjectId,ref:''}],
-    tweets:[{type: Schema.Types.ObjectId,ref:''}],
-    likedTweets:[{type: Schema.Types.ObjectId, ref:''}],
-    sharedTweets:[{type: Schema.Types.ObjectId,ref:''}],
-    mentions:[{type: Schema.Types.ObjectId, ref:''}]
+    followers:[{type: Schema.Types.ObjectId, ref: 'User'}],
+    following:[{type: Schema.Types.ObjectId,ref: 'User'}],
+    tweets:[{type: Schema.Types.ObjectId,ref: 'Tweet'}],
+    likedtweets:[{type: Schema.Types.ObjectId, ref:'Tweet'}],
+    retweets:[{type: Schema.Types.ObjectId,ref:'Tweet'}],
+    mentions:[{type: Schema.Types.ObjectId, ref:'Tweet'}]
 
 });
 
 
-module.exports = mongoose.model('user',UserSchema);
+module.exports = mongoose.model('User',UserSchema);
