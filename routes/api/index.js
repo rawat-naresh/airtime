@@ -1,5 +1,10 @@
 let router = require('express').Router();
+let auth = require('../auth');
+
+
+
 router.use('/', require('./users'));
+router.use('/settings', auth.required ,require('./settings'));
 
 
 
