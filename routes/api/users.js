@@ -63,48 +63,23 @@ router.get('/users/:username', auth.optional, function(req, res, next) {
 
     ]).then(function(results){
         let user = results[0];
-        return res.json({profile:req.user.toProfileJSON(user)});
+        return res.json({profile:req.user.toProfileJSON(user._id)});
     }).catch(next);
 });
 
+/*GET all the tweets of the user */
+
 router.get('/users/:username/tweets', auth.optional, function(req, res, next) {
-    Promise.resolve( req.payload ? User.findById(req.payload.id) : null).then(function(result) {
-        /* if(user) {
-            Promise.resolve(
-                req.user.populate('tweets')
-                .populate('reTweets')
-                .populate('likedTweets')        
-                .populate('mentions')
-                .execPopulate() 
-
-            ).then(function(result) {
-                return res.json({user:req.user.toJSONFor(user)});
-            }).catch(next);
-
-        } else {
-
-            Promise.resolve(
-                req.user.populate('tweets')
-                .execPopulate() 
-
-            ).then(function(result) {
-                return res.json({user:req.user.toJSONFor(user)});
-            }).catch(next);
-        }
-    }).catch(next); */
+    
     Promise.all([
         req.payload ? User.findById(req.payload.id) : null,
         req.user.populate('tweets')
-                /* .populate('reTweets')
-                .populate('likedTweets')        
-                .populate('mentions') */
                 .execPopulate() 
                 
     ]).then(function(results) {
         let user = results[0];
-        return res.json({user: req.user.toJSONFor(user)});
+        return res.json({tweets: req.user.toTweetJSON(user._id)});
     }).catch(next);
-});
 });
 
 /* GET Tweets   */
