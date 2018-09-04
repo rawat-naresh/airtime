@@ -1,7 +1,9 @@
 let mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 let uniqueValidator = require('mongoose-unique-validator');
-
+let crypto = require('crypto');
+let jsonwebtoken = require('jsonwebtoken');
+let secret = require('../config').secret;
 
 /* Defining User schema  */
 
@@ -21,6 +23,9 @@ let UserSchema = new Schema({
         match: [/^[a-zA-Z0-9_]+$/, 'is invalid'], 
         index: true
     },
+    email: {type: String, lowercase: true, unique: true, required: [true, "can't be blank"], match: [/\S+@\S+\.\S+/, 'is invalid'], index: true},
+    hash: String,
+    salt: String,    
     bio:{
         type: String, 
         maxlength:100
@@ -73,7 +78,37 @@ let UserSchema = new Schema({
 
 UserSchema.plugin(uniqueValidator, {message: 'is already taken.'});
 
-UserSchema.methods.toJSONFor = function(user) {
+
+UserSchema.methods.validPassword = function(password) {
+    let hash = crypto.pbkdf2Sync(password, this.salt, 10000, 512, 'sha512').toString('hex');
+    return this.hash === hash;
+};
+  
+UserSchema.methods.setPassword = function(password){
+    this.salt = crypto.randomBytes(16).toString('hex');
+    this.hash = crypto.pbkdf2Sync(password, this.salt, 10000, 512, 'sha512').toString('hex');
+};
+
+/* this method will return a JWT Token */
+UserSchema.methods.generateJWT = function() {
+    let today = new Date();
+    let exp = new Date(today);
+    exp.setDate(today.getDate() + 60);
+    return jsonwebtoken.sign({
+        id:this._id,
+        username:this.email,
+        exp : parseInt(exp.getDate() + 60)
+    }, secret);
+};
+
+UserSchema.methods.toAuthJSON = function() {
+    return {
+        email:this.email,
+        token:this.generateJWT(),
+    };
+};
+
+UserSchema.methods.toProfileJSON = function(user) {
     return {
         firstname: this.firstname,
         lastname: this.lastname,
@@ -86,15 +121,25 @@ UserSchema.methods.toJSONFor = function(user) {
         wall: this.wall,
         followersCount: this.followersCount,
         followingCount: this.followingCount,
-        /* followers: user ? this.followers : null,
-        following: user ? this.following : null, */
-        tweets: this.tweets,
-       /*  likedTweets: user ? this.likedTweets : null,
-        reTweets: user ? this.reTweets : null,
-        mentions: user ? this.mentions : null, */
+        tweets: this.tweets.toTweetJSON(user),
         createdAt: this.createdAt,
 
     }
 }
 
+
+UserSchema.methods.toUserJSON = function(){
+    return {
+        firstname: this.firstname,
+        lastname:  this.lastname,
+        username:  this.username,
+        profile:   this.profile,
+    }
+}
+
+UserSchema.methods.toRetweetJSON = function(user) {
+    return {
+        reTweets: this.reTweets.toUserJSON(user)
+    }
+}
 module.exports = mongoose.model('User',UserSchema);

@@ -11,10 +11,35 @@ let TweetSchema = new Schema({
     likedBy:[{type: Schema.Types.ObjectId, ref:'User'}],
     hatedBy:[{type: Schema.Types.ObjectId, ref:'User'}],
     reTweetedBy:[{type: Schema.Types.ObjectId, ref: 'User'}],
+    commentsCount:{type:Number, default:0},
     comments:[{types: Schema.Types.ObjectId, ref: 'Comment'}],
     attachments:[{type: String}],
     hashTags:[{type: Schema.Types.ObjectId, ref: 'HashTag'}],
 
 }, {timestamps: true});
 
+
+/*TweetSchema.methods.toTweetJSON = function() {
+    return {
+        user:this.user.,
+        body:this.body,
+        likesCount:this.likesCount,
+        hatesCount:this.hatesCount,
+        commentsCount:this.commentsCount,
+        attachments:this.attachments,
+    }
+}*/
+
+TweetSchema.methods.toProfileTweetJSON = function() {
+    return {
+        _id:this._id,
+        user_id:this.userId,
+        body:this.body,
+        likesCount:this.likesCount,
+        hatesCount:this.hatesCount,
+        reTweetsCount:this.reTweetsCount,
+        commentsCount:this.commentsCount,
+        attachments:this.attachments,
+    }
+};
 module.exports = mongoose.model('Tweet', TweetSchema);

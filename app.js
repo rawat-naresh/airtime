@@ -6,8 +6,8 @@ let expressValidator = require('express-validator');
 let mongoose = require('mongoose');
 let errorhandler = require('errorhandler');
 let session = require('express-session');
-
-let indexRoute = require('./routes');
+let methods = require('methods');
+let indexRouter = require('./routes');
 
 
 let isProduction = process.env.NODE_ENV === 'production';
@@ -22,8 +22,8 @@ app.use(bodyParser.urlencoded({extended:false}));
 app.use(express.static(path.join(__dirname,'/public')));
 app.use(session({secret:"super secret", cookie:{maxAge:60000}, resave:false, saveUninitialized:false}));
 
-// require('./models/User');
-app.use(indexRoute);
+require('./config/passport');
+app.use(indexRouter);
 
 if(!isProduction) {
     app.use(errorhandler());
@@ -38,12 +38,13 @@ if(isProduction) {
 
 /* catch 404 and forward to error handllers */
 
+ /// catch 404 and forward to error handler
 app.use(function(req, res, next) {
-    let err = new Error('Not found');
+    let err = new Error('Not Found');
     err.status = 404;
     next(err);
-});
-
+  });
+ 
 /* development error handllers */
 if(!isProduction) {
     app.use(function(req, res, next) {
@@ -71,7 +72,7 @@ app.use(function(req, res, next) {
 });
 
 /* Finally we start our server */
-let server = app.listen(process.env.PORT || 8000, function(){
+let server = app.listen(process.env.PORT || 2000, function(){
     console.log('Listening on port '+ server.address().port);
 });
 

@@ -1,18 +1,18 @@
 let router = require('express').Router();
-let passport = require('../../config/passport');
 let User = require('../../models/User');
-let UserCredential = require('../../models/UserCredential');
 let auth = require('../auth');
-
-
-
-
+let passport = require('passport');
 
 
 /* user login route */
 
-router.post('users/login', function(req, res, next) {
-    
+router.post('/users/login', function(req, res, next) {
+
+    if(!req.body.user.email)
+        return res.status(422).json({errors: {email: "can't be blank"}});
+    if(!req.body.user.password)
+        return res.status(422).json({errors: {password: "can't be blank"}});
+
     passport.authenticate('local', { session:false }, function(err, user, info) {
         if(err) { return next(err); }
         
@@ -22,27 +22,24 @@ router.post('users/login', function(req, res, next) {
         } else {
             return res.status(422).json(info);
         }
-    });
+
+        
+    })(req, res, next);
 
 });
     
 /* user signup route */
 
-router.post('users/signup', function(req, res, next) {
+router.post('/users/signup', function(req, res, next) {
     let user = new User();
-    let userCredential = new UserCredential();
-    
     user.firstname = req.body.user.firstname;
     user.lastname = req.body.user.lastname;
     user.username = req.body.user.username;
+    user.email = req.body.user.email;
+    user.password = user.setPassword(req.body.user.password);
 
-    userCredential.email = req.body.user.email;
-    userCredential.password = userCredential.setPassword(req.body.user.password);
-
-    userCredential.save().then(function() {
-        user.save().then(function() {
-            return res.json({user: userCredential.toAuthJSON()});
-        }).catch(next);
+    user.save().then(function() {
+            return res.json({user: user.toAuthJSON()});
     }).catch(next); 
 });
 
@@ -60,6 +57,17 @@ router.param('username', function(req, res, next, username) {
 /* GET user profile */
 
 router.get('/users/:username', auth.optional, function(req, res, next) {
+    Promise.all([
+        req.payload ? User.findById(req.payload.id) : null,
+        req.user.populate('tweets').execPopulate(),
+
+    ]).then(function(results){
+        let user = results[0];
+        return res.json({profile:req.user.toProfileJSON(user)});
+    }).catch(next);
+});
+
+router.get('/users/:username/tweets', auth.optional, function(req, res, next) {
     Promise.resolve( req.payload ? User.findById(req.payload.id) : null).then(function(result) {
         /* if(user) {
             Promise.resolve(
@@ -101,13 +109,29 @@ router.get('/users/:username', auth.optional, function(req, res, next) {
 
 /* GET Tweets   */
 
-router.get('/users/:username/tweets', auth.required, function(req, res, next) {
+/* router.get('/users/:username/tweets', auth.optional, function(req, res, next) {
+    Promise.all([
+        req.payload ? User.findById(req.payload.id) : null,
+        req.user.populate('tweets').execPopulate(),
 
-});
+     ]).then(function(results) {
+        return res.json({tweets:{}})
+     }).catch(next);
+}); */
 
 /* GET Re-Tweets   */
 
 router.get('/users/:username/re-tweets', auth.required, function(req,res,next) {
+
+    Promise.all([
+        req.payload ? User.findById(req.payload.id) : null,
+        req.user.populate({path:'reTweets',populate:{ path: 'userId'}}).execPopulate()
+    ]).then(function(results) {
+        let user = results[0];
+        return res.json({reTweets: req.user.reTweets.map(function(retweet) {
+                return retweet.toRetweetJSON(user);
+        })});
+    }).catch(next);    
 
 });
 
@@ -117,25 +141,33 @@ router.get('/users/:username/likes-n-replies', auth.required, function(req, res,
 
 });
 
-/* Update GET Route */
+/* Follow a user */
 
-router.get('/user/:username/update', auth.required, function(req, res, next) {
+router.put('/users/:username/follow', auth.required, function(req, res, next) {
+
+});
+
+router.delete('/users/:username/unfollow', auth.required, function(req, res, next) {
 
 });
 
-/* Update PUT Route */
-
-router.put('/user/:username/update', auth.required, function(req, res, next) {
+router.put('/users/:username/block', auth.required, function(req, res, next) {
 
 });
+
+router.delete('/users/:username/unblock', auth.required, function(req, res, next) {
+
+});
+
+router.get('/users/:username/unfollowed-by', auth.required, function(req, res, next) {
+
+});
+
 //get user tweets:optional
 //get user retweets:optional
 //get user liked and replied tweets :optional
 //get this user profile:optional
 
-/* PUT */
-//update user credentials:auth
-//update user details:auth
 
 //follow a user:auth
 //unfollow a user:auth
