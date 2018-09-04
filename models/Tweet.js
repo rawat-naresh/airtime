@@ -30,7 +30,7 @@ let TweetSchema = new Schema({
     }
 }*/
 
-TweetSchema.methods.toProfileTweetJSON = function() {
+TweetSchema.methods.toProfileTweetJSON = function(userId) {
     return {
         _id:this._id,
         user_id:this.userId,
@@ -40,6 +40,22 @@ TweetSchema.methods.toProfileTweetJSON = function() {
         reTweetsCount:this.reTweetsCount,
         commentsCount:this.commentsCount,
         attachments:this.attachments,
+        isLiked: userId ? this.isLiked(userId): false,
+        isHated: userId ? this.isHated(userid): false,
     }
 };
+
+TweetSchema.methods.isLiked = function(userId) {
+    this.likedBy.some(function(_id) {
+        return _id.toString() === userId.toString();
+    });
+}
+
+TweetSchema.methods.isHated = function(userId) {
+    this.hatedBy.some(function(_id) {
+        return _id.toString() === userId.toString();
+    });
+}
+
+
 module.exports = mongoose.model('Tweet', TweetSchema);
