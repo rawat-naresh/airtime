@@ -108,7 +108,7 @@ UserSchema.methods.toAuthJSON = function() {
     };
 };
 
-UserSchema.methods.toProfileJSON = function(user) {
+UserSchema.methods.toProfileJSON = function(userId) {
     return {
         firstname: this.firstname,
         lastname: this.lastname,
@@ -121,10 +121,16 @@ UserSchema.methods.toProfileJSON = function(user) {
         wall: this.wall,
         followersCount: this.followersCount,
         followingCount: this.followingCount,
-        tweets: this.tweets.toTweetJSON(user),
+        tweets: this.toTweetJSON(userId),
         createdAt: this.createdAt,
 
-    }
+    };
+}
+
+UserSchema.methods.toTweetJSON = function(userId) {
+    return this.tweets.map(function(tweet) {
+        return tweet.toProfileTweetJSON(userId)
+    });
 }
 
 
