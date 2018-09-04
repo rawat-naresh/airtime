@@ -97,6 +97,7 @@ router.get('/users/:username', auth.optional, function(req, res, next) {
         return res.json({user: req.user.toJSONFor(user)});
     }).catch(next);
 });
+});
 
 /* GET Tweets   */
 
@@ -116,7 +117,17 @@ router.get('/users/:username/likes-n-replies', auth.required, function(req, res,
 
 });
 
-router.put()
+/* Update GET Route */
+
+router.get('/user/:username/update', auth.required, function(req, res, next) {
+
+});
+
+/* Update PUT Route */
+
+router.put('/user/:username/update', auth.required, function(req, res, next) {
+
+});
 //get user tweets:optional
 //get user retweets:optional
 //get user liked and replied tweets :optional
