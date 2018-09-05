@@ -4,6 +4,7 @@ let uniqueValidator = require('mongoose-unique-validator');
 let crypto = require('crypto');
 let jsonwebtoken = require('jsonwebtoken');
 let secret = require('../config').secret;
+let Tweet = require('./Tweet');
 
 /* Defining User schema  */
 
@@ -161,6 +162,36 @@ UserSchema.methods.likeTweet = function(tweetId) {
     return this.save(); 
 }
 
+UserSchema.methods.unlikeTweet = function(tweetId) {
+     let twIndex = 
+     this.likedTweets.push(tweetId);
+     
+     return this.save(); 
+ }
+
+
+UserSchema.methods.deleteTweet = function(tweetId) {
+    let tWindex = this.tweets.indexOf(tweetId);
+    if(tWindex != -1) {
+        this.tweets.splice(tWindex,1);
+        Tweet.findByIdAndRemove(tweetId).exec();
+        let rTindex = this.reTweets.indexOf(tweetId);
+        if(rTindex != -1) {
+            this.reTweets.splice(rTindex, 1);
+        }
+    
+        this.save()
+        return true;
+    
+    }
+    else {
+        return false;
+    }
+
+    
+    
+    this.reTweets.splice(rTindex,1);
+}
 UserSchema.methods.toRetweetJSON = function(user) {
     return {
         reTweets: this.reTweets.toUserJSON(user)

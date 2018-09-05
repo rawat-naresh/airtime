@@ -69,10 +69,58 @@ router.post('/:tweetId/like', auth.required, function(req, res, next) {
                 });
             });
         }
-        else 
-            return res.json({likes:likesCount});
+        else  {
+            user.unlikeTweet(tweetId).then(function() {
+                req.tweet.removeLikesCount(user._id,likesCount).then(function(tweet) {
+                    likesCount = tweet.likesCount;
+                   return res.json({likes:likesCount});
+               });
+           });
+            //return res.json({likes:likesCount}); 
+        }
         
       }).catch(next);
+});
+
+
+/* router.post('/:tweetId/dislike', auth.required, function(req, res, next) {
+    let tweetId = req.tweet._id;
+    
+    User.findById(req.payload.id).then(function(user){
+        if (!user) { return res.sendStatus(401); }
+
+        // if user has already liked this tweet,and hating it.
+        //user hasn't liked this tweet and hating it.
+        //user has already hated it and unhating it now.
+
+        if(user.)
+
+        let likesCount = req.tweet.likesCount;
+
+        if(!req.tweet.isLiked(user._id )) {
+                user.likeTweet(tweetId).then(function() {
+                    req.tweet.updateLikesCount(user._id,likesCount).then(function(tweet) {
+                        likesCount = tweet.likesCount;
+                    return res.json({likes:likesCount});
+                });
+            });
+        }
+        else 
+            return res.json({likes:likesCount});
+    
+    }).catch(next);
+}); */
+
+router.delete('/:tweetId/delete', auth.required, function(req, res, next) {
+    let tweetId = req.tweet._id;
+
+    User.findById(req.payload.id).then(function(user) {
+        if(!user) { return res.sendStatus(401); }
+        
+
+        user.deleteTweet(tweetId) ?  res.sendStatus(200) :  res.sendStatus(403);
+
+    }).catch(next);
 });
 
 /* 
