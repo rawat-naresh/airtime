@@ -40,7 +40,7 @@ router.post('/create', auth.required ,function(req, res, next) {
 });
 
 /* working fine */
-router.put('/:tweetId/retweet', auth.required, function(req, res, next) {
+router.post('/:tweetId/retweet', auth.required, function(req, res, next) {
     User.findById(req.payload.id).then(function(user){
         if (!user) { return res.sendStatus(401); }
         
@@ -50,7 +50,29 @@ router.put('/:tweetId/retweet', auth.required, function(req, res, next) {
         ]).then(function(results){
             return res.json({tweet: req.tweet.toUserRtJSON(user._id)});
         }).catch(next)          
-    }).catch(next);
+    });
+});
+
+router.post('/:tweetId/like', auth.required, function(req, res, next) {
+    let tweetId = req.tweet._id;
+    
+      User.findById(req.payload.id).then(function(user){
+        if (!user) { return res.sendStatus(401); }
+    
+        let likesCount = req.tweet.likesCount;
+
+        if(!req.tweet.isLiked(user._id )) {
+             user.likeTweet(tweetId).then(function() {
+                 req.tweet.updateLikesCount(user._id,likesCount).then(function(tweet) {
+                     likesCount = tweet.likesCount;
+                    return res.json({likes:likesCount});
+                });
+            });
+        }
+        else 
+            return res.json({likes:likesCount});
+        
+      }).catch(next);
 });
 
 /* 
