@@ -3,6 +3,9 @@ let auth = require('../auth');
 
 
 router.use('/', require('./users'));
+router.use('/tweets', require('./tweets'));
+router.use('/comments', require('./comments'));
+
 //router.use('/settings', auth.required ,require('./settings'));
 
 
