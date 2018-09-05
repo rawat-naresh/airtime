@@ -97,7 +97,7 @@ UserSchema.methods.generateJWT = function() {
     return jsonwebtoken.sign({
         id:this._id,
         username:this.email,
-        exp : parseInt(exp.getDate() + 60)
+        exp : parseInt(exp.getTime() / 1000),
     }, secret);
 };
 
@@ -129,18 +129,29 @@ UserSchema.methods.toProfileJSON = function(userId) {
 
 UserSchema.methods.toTweetJSON = function(userId) {
     return this.tweets.map(function(tweet) {
-        return tweet.toProfileTweetJSON(userId)
+        return tweet.toTweetJSON(userId)
     });
 }
 
+UserSchema.methods.addTweetToUser = function(tweet) {
+    this.tweets.push(tweet);
+    return this.save();
+}
 
-UserSchema.methods.toUserJSON = function(){
+UserSchema.methods.addRTweetToUser = function(tweet) {
+    this.reTweets.push(tweet);
+    return this.save();
+}
+
+
+UserSchema.methods.toUserTweetJSON = function(userId){
     return {
         firstname: this.firstname,
         lastname:  this.lastname,
         username:  this.username,
         profile:   this.profile,
-    }
+        tweets:    this.toTweetJSON(userId),
+    };
 }
 
 UserSchema.methods.toRetweetJSON = function(user) {
