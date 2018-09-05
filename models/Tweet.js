@@ -37,10 +37,15 @@ TweetSchema.methods.toTweetJSON = function(userId) {
 };
 
 TweetSchema.methods.isLiked = function(userId) {
-    this.likedBy.some(function(_id) {
-        return _id.toString() === userId.toString();
-    });
+    return (this.likedBy.indexOf(userId) === -1) ? false : true;
 }
+
+TweetSchema.methods.updateLikesCount = function(id, likesCount) {
+    this.likedBy.push(id);
+    this.likesCount = likesCount+1;
+    return this.save();
+}
+
 
 TweetSchema.methods.isHated = function(userId) {
     this.hatedBy.some(function(_id) {
