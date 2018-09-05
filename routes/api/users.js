@@ -63,7 +63,7 @@ router.get('/users/:username', auth.optional, function(req, res, next) {
 
     ]).then(function(results){
         let user = results[0];
-        return res.json({profile:req.user.toProfileJSON(user._id)});
+        return res.json({profile:req.user.toProfileJSON(user ? user._id:null)});
     }).catch(next);
 });
 
@@ -78,33 +78,21 @@ router.get('/users/:username/tweets', auth.optional, function(req, res, next) {
                 
     ]).then(function(results) {
         let user = results[0];
-        return res.json({tweets: req.user.toTweetJSON(user._id)});
+        return res.json({tweets: req.user.toUserTweetJSON(user ?user._id:null)});
     }).catch(next);
 });
 
-/* GET Tweets   */
-
-/* router.get('/users/:username/tweets', auth.optional, function(req, res, next) {
-    Promise.all([
-        req.payload ? User.findById(req.payload.id) : null,
-        req.user.populate('tweets').execPopulate(),
-
-     ]).then(function(results) {
-        return res.json({tweets:{}})
-     }).catch(next);
-}); */
-
 /* GET Re-Tweets   */
-
+//working as expected
 router.get('/users/:username/re-tweets', auth.required, function(req,res,next) {
 
     Promise.all([
         req.payload ? User.findById(req.payload.id) : null,
-        req.user.populate({path:'reTweets',populate:{ path: 'userId'}}).execPopulate()
+        req.user.populate({path:'reTweets',populate:{ path: 'user'}}).execPopulate()
     ]).then(function(results) {
         let user = results[0];
         return res.json({reTweets: req.user.reTweets.map(function(retweet) {
-                return retweet.toRetweetJSON(user);
+                return retweet.toUserRtJSON(user);
         })});
     }).catch(next);    
 
