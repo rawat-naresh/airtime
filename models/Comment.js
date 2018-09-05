@@ -1,5 +1,5 @@
 let mongoose = require('mongoose');
-let Schema = monoose.Schema;
+let Schema = mongoose.Schema;
 
 let CommentSchema = new Schema({
     userId:{type: Schema.Types.ObjectId, ref: 'User'},
