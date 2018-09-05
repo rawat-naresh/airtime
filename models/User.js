@@ -154,6 +154,13 @@ UserSchema.methods.toUserTweetJSON = function(userId){
     };
 }
 
+UserSchema.methods.likeTweet = function(tweetId) {
+   
+    this.likedTweets.push(tweetId);
+    
+    return this.save(); 
+}
+
 UserSchema.methods.toRetweetJSON = function(user) {
     return {
         reTweets: this.reTweets.toUserJSON(user)
