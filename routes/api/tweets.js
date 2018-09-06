@@ -3,6 +3,8 @@ let Tweet = require('../../models/Tweet');
 let User = require('../../models/User');
 let auth = require('../auth');
 
+/* preloading tweet */
+
 router.param('tweetId', function(req, res, next, tweetId) {
     Tweet.findById(tweetId).then(function(tweet) {
         if(!tweet) { return res.sendStatus(404);}
@@ -14,7 +16,9 @@ router.param('tweetId', function(req, res, next, tweetId) {
 router.get('/', function(req, res, next) {
     res.json({'tweet':'tweets root'});
 });
+
 /* working fine */
+
 router.post('/create', auth.required ,function(req, res, next) {
     if( req.body.tweet.body === 'undefined') {
         return res.json({'body':'is required'});
@@ -40,6 +44,7 @@ router.post('/create', auth.required ,function(req, res, next) {
 });
 
 /* working fine */
+
 router.post('/:tweetId/retweet', auth.required, function(req, res, next) {
     User.findById(req.payload.id).then(function(user){
         if (!user) { return res.sendStatus(401); }
@@ -53,6 +58,8 @@ router.post('/:tweetId/retweet', auth.required, function(req, res, next) {
     });
 });
 
+/* Like a Tweet */
+
 router.post('/:tweetId/like', auth.required, function(req, res, next) {
     let tweetId = req.tweet._id;
     
@@ -63,44 +70,32 @@ router.post('/:tweetId/like', auth.required, function(req, res, next) {
 
         if(!req.tweet.isLiked(user._id )) {
              user.likeTweet(tweetId).then(function() {
-                 req.tweet.updateLikesCount(user._id,likesCount).then(function(tweet) {
+                 req.tweet.increaseLikesCount(user._id,likesCount).then(function(tweet) {
                      likesCount = tweet.likesCount;
                     return res.json({likes:likesCount});
                 });
             });
         }
-        else  {
-            user.unlikeTweet(tweetId).then(function() {
-                req.tweet.removeLikesCount(user._id,likesCount).then(function(tweet) {
-                    likesCount = tweet.likesCount;
-                   return res.json({likes:likesCount});
-               });
-           });
-            //return res.json({likes:likesCount}); 
-        }
+        else  
+            return res.json({likes:likesCount}); 
+        
         
       }).catch(next);
 });
 
+/* Dislike a Tweet */
 
-/* router.post('/:tweetId/dislike', auth.required, function(req, res, next) {
+router.post('/:tweetId/dislike', auth.required, function(req, res, next) {
     let tweetId = req.tweet._id;
     
     User.findById(req.payload.id).then(function(user){
         if (!user) { return res.sendStatus(401); }
-
-        // if user has already liked this tweet,and hating it.
-        //user hasn't liked this tweet and hating it.
-        //user has already hated it and unhating it now.
-
-        if(user.)
-
+        
         let likesCount = req.tweet.likesCount;
-
-        if(!req.tweet.isLiked(user._id )) {
-                user.likeTweet(tweetId).then(function() {
-                    req.tweet.updateLikesCount(user._id,likesCount).then(function(tweet) {
-                        likesCount = tweet.likesCount;
+        if(req.tweet.isLiked(user._id)) {
+            user.dislikeTweet(tweetId).then(function() {
+                req.tweet.decreaseLikesCount(user._id,likesCount).then(function(tweet) {
+                    likesCount = tweet.likesCount;
                     return res.json({likes:likesCount});
                 });
             });
@@ -109,7 +104,9 @@ router.post('/:tweetId/like', auth.required, function(req, res, next) {
             return res.json({likes:likesCount});
     
     }).catch(next);
-}); */
+});
+
+/* Delete a tweet */
 
 router.delete('/:tweetId/delete', auth.required, function(req, res, next) {
     let tweetId = req.tweet._id;
@@ -123,13 +120,4 @@ router.delete('/:tweetId/delete', auth.required, function(req, res, next) {
     }).catch(next);
 });
 
-/* 
-*create tweet
-*retweet
-*like tweet
-*dislike tweet
-*delete tweet
-*
-
-*/
 module.exports = router;
