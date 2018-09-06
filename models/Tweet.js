@@ -8,10 +8,10 @@ let TweetSchema = new Schema({
     user:{type: Schema.Types.ObjectId, ref: 'User'},
     body:{type: String, required:[true, 'is required'], maxlength:100},
     likesCount:{type: Number, default: 0},
-    hatesCount:{type: Number, default: 0},
+    // hatesCount:{type: Number, default: 0},
     reTweetsCount:{type: Number, default:0},
     likedBy:[{type: Schema.Types.ObjectId, ref:'User'}],
-    hatedBy:[{type: Schema.Types.ObjectId, ref:'User'}],
+    // hatedBy:[{type: Schema.Types.ObjectId, ref:'User'}],
     reTweetedBy:[{type: Schema.Types.ObjectId, ref: 'User'}],
     commentsCount:{type:Number, default:0},
     comments:[{type: Schema.Types.ObjectId, ref: 'Comment'}],
@@ -27,12 +27,12 @@ TweetSchema.methods.toTweetJSON = function(userId) {
         // user_id:this.user,
         body:this.body,
         likesCount:this.likesCount,
-        hatesCount:this.hatesCount,
+        // hatesCount:this.hatesCount,
         reTweetsCount:this.reTweetsCount,
         commentsCount:this.commentsCount,
         attachments:this.attachments,
         isLiked: userId ? this.isLiked(userId): false,
-        isHated: userId ? this.isHated(userId): false,
+        // isHated: userId ? this.isHated(userId): false,
     }
 };
 
@@ -40,12 +40,19 @@ TweetSchema.methods.isLiked = function(userId) {
     return (this.likedBy.indexOf(userId) === -1) ? false : true;
 }
 
-TweetSchema.methods.updateLikesCount = function(id, likesCount) {
+TweetSchema.methods.increaseLikesCount = function(id, likesCount) {
     this.likedBy.push(id);
     this.likesCount = likesCount+1;
     return this.save();
 }
 
+
+
+TweetSchema.methods.decreaseLikesCount = function(id, likesCount) {
+    this.likedBy.remove(id);
+    this.likesCount = likesCount-1;
+    return this.save();
+}
 
 TweetSchema.methods.isHated = function(userId) {
     this.hatedBy.some(function(_id) {
@@ -54,8 +61,7 @@ TweetSchema.methods.isHated = function(userId) {
 }
 
 TweetSchema.methods.toUserRtJSON = function(userId) {
-    console.log("*/*/*/*/*/*/*/*/*/*/");
-    console.log(this.user);
+    
     return {
         firstname:this.user.firstname,
         lastname:this.user.lastname,
