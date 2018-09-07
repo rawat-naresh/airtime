@@ -100,32 +100,74 @@ router.get('/users/:username/re-tweets', auth.required, function(req,res,next) {
 
 /* GET Tweets liked/replid by user  */
 
-router.get('/users/:username/likes-n-replies', auth.required, function(req, res, next) {
+router.get('/users/:username/likes', auth.required, function(req, res, next) {
+    User.findById(req.payload.id).then(function(user) {
+        if(!user){ return res.sendStatus(404);}
 
+        Promise.resolve(req.user.populate({path:'likedTweets',populate:{ path: 'user'}}).execPopulate())
+        .then(function(result) {
+            return res.json({likedTweets: req.user.likedTweets.map(function(likedTweet) {
+                return likedTweet.toUserRtJSON(user);
+            })});
+        });
+        
+        
+    }).catch(next);
 });
 
 /* Follow a user */
 
 router.put('/users/:username/follow', auth.required, function(req, res, next) {
+    User.findById(req.payload.id).then(function(user) {
+        if(!user){ return res.sendStatus(404);}
 
+        if(!user.isFollowing(req.user._id)) {
+            user.addFollowing(req.user._id).then(function() {
+                req.user.addFollower(user._id).then(function() {
+                    return  res.json({ following: user.getFollowingCount() });
+                });
+            });
+        }
+        else {
+            return res.json({ followingCount:user.getFollowingCount() });
+        }
+        
+    }).catch(next);
 });
 
 router.delete('/users/:username/unfollow', auth.required, function(req, res, next) {
+    User.findById(req.payload.id).then(function(user) {
+        if(!user) {return res.sendStatus(404);}
 
+        if(user.isFollowing(req.user._id)) {
+            user.removeFollowing(req.user._id).then(function() {
+                req.user.removeFollower(user._id).then(function() {
+                    return res.json({ following:user.getFollowingCount() });
+                });
+            });
+        }
+        else {
+            return res.json({ following:user.getFollowingCount });
+        }
+    }).catch(next);
 });
 
-router.put('/users/:username/block', auth.required, function(req, res, next) {
+/* router.put('/users/:username/block', auth.required, function(req, res, next) {
+    User.findById(req.payload.id).then(function(user) {
+        if(!user) {return res.sendStatus(404);}
+        
+        
+    }).catch(next);
+});
+ */
+/* router.delete('/users/:username/unblock', auth.required, function(req, res, next) {
 
 });
-
-router.delete('/users/:username/unblock', auth.required, function(req, res, next) {
-
-});
-
-router.get('/users/:username/unfollowed-by', auth.required, function(req, res, next) {
+ */
+/* router.get('/users/:username/unfollowed-by', auth.required, function(req, res, next) {
 
 });
-
+ */
 //get user tweets:optional
 //get user retweets:optional
 //get user liked and replied tweets :optional
