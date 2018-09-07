@@ -2,13 +2,16 @@ let mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 
 let CommentSchema = new Schema({
-    userId:{type: Schema.Types.ObjectId, ref: 'User'},
+    user:{type: Schema.Types.ObjectId, ref: 'User'},
     body:{type: String, required:[true, 'is required'], maxlength: 100},
-    replies:[{type: Schema.Types.ObjectId, ref: 'Comment'}],
-    reTweet:[{type: Schema.Types.ObjectId, ref: 'User'}],
+    replies:[{type: Schema.Types.ObjectId, ref:'Comment'} ],
+    //reTweet:[{type: Schema.Types.ObjectId, ref: 'User'}],
     likesCount:{type: Number, default: 0},
     repliesCount:{type: Number, default: 0},
-    reTweetCount:{type: Number, default: 0},
+    //reTweetsCount:{type: Number, default: 0},
+    hasReplies:{type: Number,default:false},
 }, {timestamps:true});
+
+
 
 module.exports = mongoose.model('Comment', CommentSchema);
