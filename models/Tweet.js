@@ -21,6 +21,52 @@ let TweetSchema = new Schema({
 }, {timestamps: true});
 
 
+
+
+TweetSchema.methods.isLikedBy = function(userId) {
+
+    return this.likedBy.indexOf(userId) != -1;
+}
+
+TweetSchema.methods.getLikesCount = function() {
+
+    return this.likesCount;
+}
+
+TweetSchema.methods.likeTweet = function(id) {
+    
+    this.likedBy.push(id);
+    return this.increaseLikesCount();
+
+}
+
+TweetSchema.methods.dislikeTweet = function(id) {
+
+    this.likedBy.remove(id);
+    return this.decreaseLikesCount();    
+}
+
+TweetSchema.methods.increaseLikesCount = function() {
+
+    this.likesCount += 1;
+    return this.save();
+}
+
+
+
+TweetSchema.methods.decreaseLikesCount = function(id, likesCount) {
+    
+    this.likesCount -= 1;
+    return this.save();
+}
+
+/* TweetSchema.methods.isHated = function(userId) {
+
+    this.hatedBy.some(function(_id) {
+        return _id.toString() === userId.toString();
+    });
+} */
+
 TweetSchema.methods.toTweetJSON = function(userId) {
     return {
         _id:this._id,
@@ -31,34 +77,10 @@ TweetSchema.methods.toTweetJSON = function(userId) {
         reTweetsCount:this.reTweetsCount,
         commentsCount:this.commentsCount,
         attachments:this.attachments,
-        isLiked: userId ? this.isLiked(userId): false,
+        isLiked: userId ? this.isLikedBy(userId): false,
         // isHated: userId ? this.isHated(userId): false,
     }
 };
-
-TweetSchema.methods.isLiked = function(userId) {
-    return (this.likedBy.indexOf(userId) === -1) ? false : true;
-}
-
-TweetSchema.methods.increaseLikesCount = function(id, likesCount) {
-    this.likedBy.push(id);
-    this.likesCount = likesCount+1;
-    return this.save();
-}
-
-
-
-TweetSchema.methods.decreaseLikesCount = function(id, likesCount) {
-    this.likedBy.remove(id);
-    this.likesCount = likesCount-1;
-    return this.save();
-}
-
-TweetSchema.methods.isHated = function(userId) {
-    this.hatedBy.some(function(_id) {
-        return _id.toString() === userId.toString();
-    });
-}
 
 TweetSchema.methods.toUserRtJSON = function(userId) {
     
@@ -71,6 +93,38 @@ TweetSchema.methods.toUserRtJSON = function(userId) {
     }
 
 }
+
+TweetSchema.methods.getUserCommentsJSON = function() {
+    return {
+        firstname:this.user.firstname,
+        lastname: this.user.lastname,
+        username:this.user.username,
+        profile :this.user.profile,
+        comment:this.toCommentJSON(),
+    };
+}
+
+TweetSchema.methods.toCommentJSON = function() {
+    return {
+        body:this.body,
+        likesCount:this.likesCount,
+        repliesCount:this.repliesCount,
+        hasReplies:this.hasReplies,
+        //reTweetsCount:this.reTweetsCount,
+    }
+}
+
+TweetSchema.methods.addComment = function(commentId){
+    this.comments = commentId;
+    return this.increaseCommentCount(); 
+}
+
+
+TweetSchema.methods.increaseCommentCount = function(){
+    this.commentsCount += 1;
+    return this.save();
+}
+
 
 
 
