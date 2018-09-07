@@ -73,7 +73,8 @@ let UserSchema = new Schema({
     mentions:[{
         type: Schema.Types.ObjectId, 
         ref:'Tweet'
-    }]
+    }],
+    
 
 });
 
@@ -139,8 +140,11 @@ UserSchema.methods.addTweetToUser = function(tweet) {
     return this.save();
 }
 
-UserSchema.methods.addRTweetToUser = function(tweet) {
-    this.reTweets.push(tweet);
+UserSchema.methods.addRTweetToUser = function(tweetId) {
+    if(this.reTweets.indexOf(tweetId) === -1) {
+        this.reTweets.push(tweetId);
+    }
+    
     return this.save();
 }
 
@@ -155,18 +159,18 @@ UserSchema.methods.toUserTweetJSON = function(userId){
     };
 }
 
-UserSchema.methods.likeTweet = function(tweetId) {
+UserSchema.methods.likeTweet = function(tweet) {
    
-    this.likedTweets.push(tweetId);
-    
-    return this.save(); 
+    this.likedTweets.push(tweet._id);
+    this.save();
+    return tweet.likeTweet(this._id);
 }
 
-UserSchema.methods.unlikeTweet = function(tweetId) {
-     let twIndex = 
-     this.likedTweets.push(tweetId);
-     
-     return this.save(); 
+UserSchema.methods.dislikeTweet = function(tweet) {
+
+     this.likedTweets.remove(tweet._id);
+     this.save();
+     return tweet.dislikeTweet(this._id); 
  }
 
 
@@ -184,17 +188,75 @@ UserSchema.methods.deleteTweet = function(tweetId) {
         return true;
     
     }
-    else {
-        return false;
-    }
-
     
-    
-    this.reTweets.splice(rTindex,1);
+    return false;
 }
+
 UserSchema.methods.toRetweetJSON = function(user) {
+
     return {
         reTweets: this.reTweets.toUserJSON(user)
     }
+
 }
+
+UserSchema.methods.getFollowingCount = function() {
+
+    return this.followingCount;
+}
+
+UserSchema.methods.getFollowersCount = function() {
+
+    return this.followersCount;
+}
+
+UserSchema.methods.isFollowing = function(id) {
+
+    return this.following.indexOf(id) != -1
+
+}
+
+UserSchema.methods.addFollowing = function(id) {
+
+    this.following.push(id);
+    return this.increaseFollowingCount(); 
+
+}
+
+UserSchema.methods.increaseFollowingCount = function() {
+
+    this.followingCount +=1;
+    return this.save();
+}
+
+UserSchema.methods.addFollower = function(id) {
+    this.followers.push(id);
+    return this.increaseFollowerCount();
+}
+
+UserSchema.methods.increaseFollowerCount = function(id) {
+    this.followersCount +=1 ;
+    return this.save();
+}
+
+UserSchema.methods.removeFollowing = function(id) {
+    this.following.remove(id);
+    return this.decreaseFollowingCount();
+}
+
+UserSchema.methods.removeFollower = function(id) {
+    this.followers.remove(id);
+    return this.decreaseFollowerCount();
+}
+
+UserSchema.methods.decreaseFollowingCount = function() {
+    this.followingCount -= 1;
+    return this.save();
+}
+
+UserSchema.methods.decreaseFollowerCount = function() {
+    this.followersCount -= 1;
+    return this.save();
+}
+
 module.exports = mongoose.model('User',UserSchema);
