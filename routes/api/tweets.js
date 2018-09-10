@@ -99,7 +99,7 @@ router.get('/:tweetId/comments', auth.optional, function(req, res, next) {
     Promise.resolve(req.tweet.populate({path:'comments', populate:{path:'user'}}).execPopulate())
     .then(function() {
         return res.json({comments:req.tweet.comments.map(function(comment) {
-            return comment.getUserCommentsJSON();
+            return comment.toUserCommentsJSON();
         })}); 
     }).catch(next);
 });
@@ -120,7 +120,8 @@ router.post('/:tweetId/comment', auth.required, function(req, res, next) {
 
             req.tweet.addComment(comment._id).then(function(tweet){
                 return res.json({comments:tweet.comments.map(function(comment) {
-                    return comment.getUserCommentsJSON();
+                    //might not work, we are not populating comments in Tweet
+                    return comment.toUserCommentsJSON();
                     }) 
                 });
             });
@@ -140,7 +141,7 @@ router.get('/:commentId/replies', auth.optional, function(req, res, next) {
           return res.json(
             {
                 replies:comment.replies.map(function(reply) {
-                    return reply.getUserCommentsJSON();
+                    return reply.toUserCommentsJSON();
                 })
             }
         );  
@@ -159,16 +160,21 @@ router.post('/:commentId/reply', auth.required, function(req, res, next) {
     Comment.findById(req.params.commentId).then(function(comment) {
         if(!comment) {return res.sendStatus(404); }
 
-        let comment = new Comment();
-        comment.body = req.body.comment;
-        comment.user = req.payload.id
+        let reply = new Comment();
+        reply.body = req.body.comment;
+        reply.user = req.payload.id;
+        reply.save().then(function(reply) {
+            comment.addReply(reply._id).then(function() {
+                //right now only returning the current reply
+                //TODO:this might change in future.
+                return res.json({replies:reply.toUserCommentsJSON()});
+            });
+        });
     }).catch(next);
 });
 
 
-/*router.post('/:tweetId/comment', auth.required, function(req, res, next) {
 
-}).catch(next);*/
 
 /* Delete a tweet */
 
