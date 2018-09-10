@@ -82,6 +82,10 @@ router.get('/users/:username/tweets', auth.optional, function(req, res, next) {
     }).catch(next);
 });
 
+router.get('/users/:username/tweet/tweetId', function(req, res, next) {
+    //get individual tweet
+});
+
 /* GET Re-Tweets   */
 //working as expected
 router.get('/users/:username/re-tweets', auth.required, function(req,res,next) {
