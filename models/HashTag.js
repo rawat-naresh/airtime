@@ -7,4 +7,13 @@ let HashTagSchema = new Schema({
     tweetsCount:{type: Number, default: 0},
 }, {timestamps:true});
 
+HashTagSchema.methods.addTweet = function(tweetId) {
+    this.tweets.push(tweetId);
+    return this.increaseTweetCount();
+}
+
+HashTagSchema.methods.increaseTweetCount = function() {
+    this.tweetsCount += 1;
+    return this.save();
+}
 module.exports = mongoose.model('HashTag', HashTagSchema);
