@@ -259,4 +259,9 @@ UserSchema.methods.decreaseFollowerCount = function() {
     return this.save();
 }
 
+UserSchema.methods.addMentionedTweet = function(tweetId) {
+    this.mentions.push(tweetId);
+    return this.save();
+}
+
 module.exports = mongoose.model('User',UserSchema);
