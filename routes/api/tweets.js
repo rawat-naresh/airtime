@@ -2,6 +2,7 @@ let router = require('express').Router();
 let Tweet = require('../../models/Tweet');
 let User = require('../../models/User');
 let Comment = require('../../models/Comment');
+let HashTag = require('../../models/HashTag');
 let auth = require('../auth');
 
 
@@ -27,13 +28,48 @@ router.post('/create', auth.required ,function(req, res, next) {
     User.findById(req.payload.id).then(function(user){
         if (!user) { return res.sendStatus(401); }
     
-        let tweet = new Tweet(req.body.tweet);
+        let tweet = new Tweet(req.body.tweet.body);
     
         tweet.user = user._id;
     
         return tweet.save().then(function(){
           tweet.populate('user').execPopulate();
           user.addTweetToUser(tweet);
+          
+          //add hashtags present in tweet to the hashtag table
+          if(req.body.tweet.htags != 'undefined') {
+            for(let tag of tags) {
+                //check if the hashtag already exists in db if not create new one.
+                HashTag.find({tag:tag}).then(function(hashtag) {
+                    if(!hashtag) {
+                        
+                        let newHashTag = new HashTag();
+                        newHashTag.tag = tag;
+                        
+                        newHashTag.addTweet(tweet._id);
+                        
+                    }
+                    else {
+                        hashtag.addTweet(tweet._id);
+                    }
+                });
+            }
+            
+          }
+
+          //if mentios present in tweet,add mentions to the User's mentions field
+          if(req.body.tweet.mentions != 'undefined') {
+              for(let mention of mentions) {
+                User.findOne({username:mention}).then(function(user) {
+                    if(user) {
+                        user.addMentioedTweet(tweet._id);
+                    }
+                });
+              }
+          }
+
+
+          
           return res.json({tweet: tweet.toUserRtJSON(user._id)});
         });
       }).catch(next);
