@@ -60,12 +60,6 @@ TweetSchema.methods.decreaseLikesCount = function(id, likesCount) {
     return this.save();
 }
 
-/* TweetSchema.methods.isHated = function(userId) {
-
-    this.hatedBy.some(function(_id) {
-        return _id.toString() === userId.toString();
-    });
-} */
 
 TweetSchema.methods.toTweetJSON = function(userId) {
     return {
@@ -94,33 +88,16 @@ TweetSchema.methods.toUserRtJSON = function(userId) {
 
 }
 
-TweetSchema.methods.getUserCommentsJSON = function() {
-    return {
-        firstname:this.user.firstname,
-        lastname: this.user.lastname,
-        username:this.user.username,
-        profile :this.user.profile,
-        comment:this.toCommentJSON(),
-    };
-}
 
-TweetSchema.methods.toCommentJSON = function() {
-    return {
-        body:this.body,
-        likesCount:this.likesCount,
-        repliesCount:this.repliesCount,
-        hasReplies:this.hasReplies,
-        //reTweetsCount:this.reTweetsCount,
-    }
-}
 
 TweetSchema.methods.addComment = function(commentId){
-    this.comments = commentId;
-    return this.increaseCommentCount(); 
+    this.comments.push(commentId);
+    return this.increaseCommentsCount(); 
 }
 
 
-TweetSchema.methods.increaseCommentCount = function(){
+
+TweetSchema.methods.increaseCommentsCount = function(){
     this.commentsCount += 1;
     return this.save();
 }
