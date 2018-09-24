@@ -6,6 +6,10 @@ let passport = require('passport');
 
 /* user login route */
 
+router.get('/', function(req,res, next) {
+    res.send("Welcome");
+});
+
 router.post('/users/login', function(req, res, next) {
 
     if(!req.body.user.email)

@@ -33,7 +33,6 @@ if(!isProduction) {
 
 if(isProduction) {
     mongoose.connect(process.env.MONGODB_URI);
-    console.log("Production");
 } else {
     mongoose.connect('mongodb://localhost:27017/airtime',{ useNewUrlParser: true });
     mongoose.set('debug', true);
