@@ -7,7 +7,7 @@ let passport = require('passport');
 /* user login route */
 
 router.get('/', function(req,res, next) {
-    res.send("Welcome");
+    res.send("<h2>Welcome to the Airtime API.</h2>");
 });
 
 router.post('/users/login', function(req, res, next) {

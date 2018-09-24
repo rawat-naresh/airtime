@@ -6,7 +6,7 @@ let cors = require('cors');
 let expressValidator = require('express-validator');
 let mongoose = require('mongoose');
 let errorhandler = require('errorhandler');
-let session = require('express-session');
+// let session = require('express-session');
 let methods = require('methods');
 let indexRouter = require('./routes');
 
@@ -22,7 +22,7 @@ app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(express.static(path.join(__dirname,'/public')));
-app.use(session({secret:"super secret", cookie:{maxAge:60000}, resave:false, saveUninitialized:false}));
+// app.use(session({secret:"super secret", cookie:{maxAge:60000}, resave:false, saveUninitialized:false}));
 
 require('./config/passport');
 app.use(indexRouter);
