@@ -2,6 +2,7 @@ let express = require('express');
 let morgan = require('morgan');
 let bodyParser = require('body-parser');
 let path = require('path');
+let cors = require('cors');
 let expressValidator = require('express-validator');
 let mongoose = require('mongoose');
 let errorhandler = require('errorhandler');
@@ -14,6 +15,7 @@ let isProduction = process.env.NODE_ENV === 'production';
 
 /* creating global app object */
 let app = express();
+app.use(cors());
 
  /* usual express configuration */
 app.use(morgan('dev'));
@@ -31,6 +33,7 @@ if(!isProduction) {
 
 if(isProduction) {
     mongoose.connect(process.env.MONGODB_URI);
+    console.log("Production");
 } else {
     mongoose.connect('mongodb://localhost:27017/airtime',{ useNewUrlParser: true });
     mongoose.set('debug', true);

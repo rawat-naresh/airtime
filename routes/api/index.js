@@ -4,8 +4,8 @@ let auth = require('../auth');
 
 router.use('/', require('./users'));
 router.use('/tweets', require('./tweets'));
-router.use('/comments', require('./comments'));
-router.use('/hashtags', require('/hashtags'));
+// router.use('/comments', require('./comments'));
+router.use('/hashtags', require('./hashtags'));
 
 
 //router.use('/settings', auth.required ,require('./settings'));

@@ -1,6 +1,7 @@
 let router = require('express').Router();
 let HashTag = require('../../models/HashTag');
 let Tweet = require('../../models/Tweet');
+let auth = require('../auth');
 router.get(':/hashtag', auth.optional, function(req, res, next) {
     // Tweet.where('hashTags').in([req.params.hashtag])
 
