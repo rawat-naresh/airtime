@@ -10,6 +10,12 @@ router.get('/', function(req,res, next) {
     res.send("<h2>Welcome to the Airtime API.</h2>");
 });
 
+router.get('/user', auth.required, function(req, res, next) {
+    User.findById(req.payload.id).then(function(user){
+        if(!user){ return res.sendStatus(401); }
+        return res.json({user: user.toAuthJSON()});
+    }).catch(next);
+});
 router.post('/users/login', function(req, res, next) {
 
     if(!req.body.user.email)
