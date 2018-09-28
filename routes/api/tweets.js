@@ -28,8 +28,8 @@ router.post('/create', auth.required ,function(req, res, next) {
     User.findById(req.payload.id).then(function(user){
         if (!user) { return res.sendStatus(401); }
     
-        let tweet = new Tweet(req.body.tweet.body);
-    
+        let tweet = new Tweet();
+        tweet.body = req.body.tweet.body;
         tweet.user = user._id;
     
         return tweet.save().then(function(){
@@ -38,9 +38,11 @@ router.post('/create', auth.required ,function(req, res, next) {
           
           //add hashtags present in tweet to the hashtag table
           if(req.body.tweet.htags != 'undefined') {
-            for(let tag of tags) {
+            for(let tag of req.body.tweet.htags) {
+                console.log("TAGS:::",tag);
                 //check if the hashtag already exists in db if not create new one.
-                HashTag.find({tag:tag}).then(function(hashtag) {
+                HashTag.findOne({tag:tag}).then(function(hashtag) {
+                    console.log("RETURNED HASHTAG",hashtag);
                     if(!hashtag) {
                         
                         let newHashTag = new HashTag();
@@ -59,7 +61,9 @@ router.post('/create', auth.required ,function(req, res, next) {
 
           //if mentios present in tweet,add mentions to the User's mentions field
           if(req.body.tweet.mentions != 'undefined') {
-              for(let mention of mentions) {
+              for(let mention of req.body.tweet.mentions) {
+              console.log("MENTIONS:::",mention);
+              
                 User.findOne({username:mention}).then(function(user) {
                     if(user) {
                         user.addMentionedTweet(tweet._id);

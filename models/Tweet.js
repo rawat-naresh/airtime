@@ -16,6 +16,7 @@ let TweetSchema = new Schema({
     commentsCount:{type:Number, default:0},
     comments:[{type: Schema.Types.ObjectId, ref: 'Comment'}],
     attachments:[{type: String}],
+    //hashTags here might be useless
     hashTags:[{type: Schema.Types.ObjectId, ref: 'HashTag'}],
 
 }, {timestamps: true});
