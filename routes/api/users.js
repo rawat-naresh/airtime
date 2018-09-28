@@ -77,6 +77,10 @@ router.get('/users/:username', auth.optional, function(req, res, next) {
     }).catch(next);
 });
 
+router.get('/users/check/:username', auth.optional, function(req, res, next) {
+    return res.json({exists:true});
+});
+
 /*GET all the tweets of the user */
 
 router.get('/users/:username/tweets', auth.optional, function(req, res, next) {
