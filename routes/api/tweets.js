@@ -62,7 +62,7 @@ router.post('/create', auth.required ,function(req, res, next) {
               for(let mention of mentions) {
                 User.findOne({username:mention}).then(function(user) {
                     if(user) {
-                        user.addMentioedTweet(tweet._id);
+                        user.addMentionedTweet(tweet._id);
                     }
                 });
               }
