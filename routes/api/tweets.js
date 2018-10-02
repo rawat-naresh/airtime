@@ -96,7 +96,7 @@ router.post('/:tweetId/retweet', auth.required, function(req, res, next) {
 
 /* Like a Tweet */
 
-router.post('/:tweetId/like', auth.required, function(req, res, next) {
+router.put('/:tweetId/like', auth.required, function(req, res, next) {
     
       User.findById(req.payload.id).then(function(user){
         if (!user) { return res.sendStatus(401); }
@@ -113,6 +113,21 @@ router.post('/:tweetId/like', auth.required, function(req, res, next) {
         
         
       }).catch(next);
+});
+
+// user who liked this tweet.
+router.get('/:tweetId/likes',auth.optional, function(req, res, next) {
+    
+    Promise.resolve( req.tweet.populate('likedBy').execPopulate()).then(function(){
+        return res.json({likedBy:req.tweet.likedBy.map((user)=>{
+            return {
+                profile:user.profile,
+                firstname:user.firstname,
+                lastname:user.lastname,
+                username:user.username,
+            }
+        })})
+    });
 });
 
 /* Dislike a Tweet */
@@ -136,7 +151,7 @@ router.delete('/:tweetId/dislike', auth.required, function(req, res, next) {
 
 
 router.get('/:tweetId/comments', auth.optional, function(req, res, next) {
-    Promise.resolve(req.tweet.populate({path:'comments', populate:{path:'user'}}).execPopulate())
+    Promise.resolve(req.tweet.populate({path:'comments', options:{ sort:{"createdAt" : "descending"}}, populate:{path:'user'}}).execPopulate())
     .then(function() {
         return res.json({comments:req.tweet.comments.map(function(comment) {
             return comment.toUserCommentsJSON();
@@ -150,7 +165,7 @@ router.post('/:tweetId/comment', auth.required, function(req, res, next) {
         return res.json({'body':'is required'});
     }
 
-    User.findById(req.payload._id,{_id}).then(function(user) {
+    User.findById(req.payload.id).then(function(user) {
         if(!user){ return res.sendStatus(401); }
 
         let comment = new Comment();
@@ -159,18 +174,22 @@ router.post('/:tweetId/comment', auth.required, function(req, res, next) {
         comment.save().then(function(comment){
 
             req.tweet.addComment(comment._id).then(function(tweet){
-                return res.json({comments:tweet.comments.map(function(comment) {
-                    //might not work, we are not populating comments in Tweet
-                    return comment.toUserCommentsJSON();
-                    }) 
-                });
+                // console.log("--------------",tweet.comments);
+                // console.log("---***********",req.tweet.comments);
+                Promise.resolve(tweet.populate({path:'comments', populate:{path:'user'}}).execPopulate())
+                    .then(function() {
+                        return res.json({
+                            comments:tweet.comments.map(
+                                (comment)=>{
+                                    return comment.toUserCommentsJSON();
+                                }
+                            )
+                        });
+                    });
             });
 
         });
-
-        
-
-    }).catch(next);
+    }).catch(next)
 });
 
 router.get('/:commentId/replies', auth.optional, function(req, res, next) {
