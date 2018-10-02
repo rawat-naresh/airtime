@@ -67,14 +67,15 @@ router.param('username', function(req, res, next, username) {
 /* GET user profile */
 
 router.get('/users/:username', auth.optional, function(req, res, next) {
-    Promise.all([
-        req.payload ? User.findById(req.payload.id) : null,
-        req.user.populate('tweets').execPopulate(),
+    // Promise.resolve(
+    //     req.payload ? User.findById(req.payload.id) : null,
+    //     //req.user.populate('tweets').execPopulate(),
 
-    ]).then(function(results){
-        let user = results[0];
-        return res.json({profile:req.user.toProfileJSON(user ? user._id:null)});
-    }).catch(next);
+    // ).then(function(result){
+    //     // let user = results[0];
+    //     return res.json({profile:req.user.toProfileJSON(user ? user._id:null)});
+    // }).catch(next);
+    return res.json({profile:req.user.toProfileJSON(req.user ? req.user._id:null)});
 });
 
 router.get('/users/check/:username', auth.optional, function(req, res, next) {
@@ -87,7 +88,7 @@ router.get('/users/:username/tweets', auth.optional, function(req, res, next) {
     
     Promise.all([
         req.payload ? User.findById(req.payload.id) : null,
-        req.user.populate('tweets')
+        req.user.populate({path:'tweets',options:{ sort:{"createdAt" : "descending"}}})
                 .execPopulate() 
                 
     ]).then(function(results) {
