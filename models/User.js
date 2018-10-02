@@ -31,6 +31,9 @@ let UserSchema = new Schema({
         type: String, 
         maxlength:100
     },
+    country:{
+        type:String
+    },
     birthday:{
         type: Date
     },
@@ -116,18 +119,18 @@ UserSchema.methods.toAuthJSON = function() {
 
 UserSchema.methods.toProfileJSON = function(userId) {
     return {
-        firstname: this.firstname,
-        lastname: this.lastname,
-        username: this.username,
+        fullname: `${this.firstname} ${this.lastname}` ,
+        username:this.username,
         bio: this.bio,
         birthday: this.birthday,
         contact: this.contact,
         relationship: this.relationship,
         profile: this.profile,
         wall: this.wall,
+        country:this.country,
         followersCount: this.followersCount,
         followingCount: this.followingCount,
-        tweets: this.toTweetJSON(userId),
+        //tweets: this.toTweetJSON(userId),
         createdAt: this.createdAt,
 
     };
