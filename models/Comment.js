@@ -70,6 +70,7 @@ CommentSchema.methods.toCommentJSON = function() {
         likesCount:this.likesCount,
         repliesCount:this.repliesCount,
         hasReplies:this.hasReplies,
+        createdAt:this.createdAt,
         //reTweetsCount:this.reTweetsCount,
     }
 }
