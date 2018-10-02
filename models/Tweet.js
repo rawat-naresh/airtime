@@ -73,6 +73,7 @@ TweetSchema.methods.toTweetJSON = function(userId) {
         commentsCount:this.commentsCount,
         attachments:this.attachments,
         isLiked: userId ? this.isLikedBy(userId): false,
+        createdAt:this.createdAt,
         // isHated: userId ? this.isHated(userId): false,
     }
 };
