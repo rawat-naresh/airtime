@@ -85,13 +85,52 @@ router.post('/:tweetId/retweet', auth.required, function(req, res, next) {
     User.findById(req.payload.id).then(function(user){
         if (!user) { return res.sendStatus(401); }
         
-        Promise.all([
+        /* Promise.all([
             user.addRTweetToUser(req.tweet._id),    
-            req.tweet.populate('user').execPopulate(),
+            // req.tweet.populate('user').execPopulate(),
         ]).then(function(results){
-            return res.json({tweet: req.tweet.toUserRtJSON(user._id)});
-        }).catch(next)          
+            return res.json({rtCount: req.tweet.toUserRtJSON(user._id)});
+        }).catch(next)      */    
+        
+        if(!user.isReTweeted(req.tweet._id)) {
+            //update the retweet count
+            //add the tweet to the user retweets
+            //return retweet count
+
+            // User.findById(req.tweet._id)
+            req.tweet.addReTweetedBy(user._id).then(function(tweet){
+                user.addRTweetToUser(req.tweet._id).then(function() {
+                    return res.json({rtcount:tweet.getRtCount()});
+                });
+            });
+        } else {
+            //return retweet count
+            return res.json({rtcount:req.tweet.getRtCount()});
+        }
     });
+});
+
+router.delete('/:tweetId/retweet', auth.required, function(req, res, next) {
+    User.findById(req.payload.id).then(function(user){
+        if (!user) { return res.sendStatus(401); }   
+        
+        if(user.isReTweeted(req.tweet._id)) {
+            //update the retweet count
+            //add the tweet to the user retweets
+            //return retweet count
+
+            // User.findById(req.tweet._id)
+            req.tweet.removeReTweetedBy(user._id).then(function(tweet){
+                user.removeRTweetFromUser(req.tweet._id).then(function() {
+                    return res.json({rtcount:tweet.getRtCount()});
+                });
+            });
+        } else {
+            //return retweet count
+            return res.json({rtcount:req.tweet.getRtCount()});
+        }
+    });
+
 });
 
 /* Like a Tweet */

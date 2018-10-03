@@ -73,6 +73,7 @@ TweetSchema.methods.toTweetJSON = function(userId) {
         commentsCount:this.commentsCount,
         attachments:this.attachments,
         isLiked: userId ? this.isLikedBy(userId): false,
+        isRetweeted:userId? this.isReTweeted(userId):false,
         createdAt:this.createdAt,
         // isHated: userId ? this.isHated(userId): false,
     }
@@ -90,7 +91,9 @@ TweetSchema.methods.toUserRtJSON = function(userId) {
 
 }
 
-
+TweetSchema.methods.isReTweeted = function(userId) {
+    return this.reTweetedBy.indexOf(userId) === -1 ? false : true;
+}
 
 TweetSchema.methods.addComment = function(commentId){
     this.comments.push(commentId);
@@ -104,7 +107,31 @@ TweetSchema.methods.increaseCommentsCount = function(){
     return this.save();
 }
 
+TweetSchema.methods.removeReTweetedBy = function(userId) {
+    this.reTweetedBy.remove(userId)
+    return this.decreaseRtCount();
+}
 
+TweetSchema.methods.addReTweetedBy = function(userId) {
+    this.reTweetedBy.push(userId)
+    return this.increaseRtCount();
+}
+
+
+
+TweetSchema.methods.increaseRtCount = function() {
+    this.reTweetsCount++;
+    return this.save();
+}
+
+TweetSchema.methods.decreaseRtCount = function() {
+    this.reTweetsCount--;
+    return this.save();
+}
+
+TweetSchema.methods.getRtCount = function() {
+    return this.reTweetsCount;
+}
 
 
 

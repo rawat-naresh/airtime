@@ -88,12 +88,14 @@ router.get('/users/:username/tweets', auth.optional, function(req, res, next) {
     
     Promise.all([
         req.payload ? User.findById(req.payload.id) : null,
-        req.user.populate({path:'tweets',options:{ sort:{"createdAt" : "descending"}}})
+        req.user.populate({path:'tweets',populate:{ path: 'user'},options:{ sort:{"createdAt" : "descending"}}})
                 .execPopulate() 
                 
     ]).then(function(results) {
         let user = results[0];
-        return res.json({tweets: req.user.toUserTweetJSON(user ?user._id:null)});
+        return res.json({tweets: req.user.tweets.map(function(tweet) {
+            return tweet.toUserRtJSON(user?user._id:null);
+    })});
     }).catch(next);
 });
 
@@ -111,7 +113,7 @@ router.get('/users/:username/re-tweets', auth.required, function(req,res,next) {
     ]).then(function(results) {
         let user = results[0];
         return res.json({reTweets: req.user.reTweets.map(function(retweet) {
-                return retweet.toUserRtJSON(user);
+                return retweet.toUserRtJSON(user?user._id:null);
         })});
     }).catch(next);    
 
@@ -123,10 +125,10 @@ router.get('/users/:username/likes', auth.required, function(req, res, next) {
     User.findById(req.payload.id).then(function(user) {
         if(!user){ return res.sendStatus(404);}
 
-        Promise.resolve(req.user.populate({path:'likedTweets',populate:{ path: 'user'}}).execPopulate())
+        Promise.resolve(req.user.populate({path:'likedTweets',populate:{ path: 'user'},options:{ sort:{"createdAt" : "descending"}}}).execPopulate())
         .then(function(result) {
             return res.json({likedTweets: req.user.likedTweets.map(function(likedTweet) {
-                return likedTweet.toUserRtJSON(user);
+                return likedTweet.toUserRtJSON(user?user._id:null);
             })});
         });
         

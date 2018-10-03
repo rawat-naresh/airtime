@@ -148,11 +148,17 @@ UserSchema.methods.addTweetToUser = function(tweet) {
 }
 
 UserSchema.methods.addRTweetToUser = function(tweetId) {
-    if(this.reTweets.indexOf(tweetId) === -1) {
-        this.reTweets.push(tweetId);
-    }
-    
+    this.reTweets.push(tweetId);
     return this.save();
+}
+
+UserSchema.methods.removeRTweetFromUser = function(tweetId) {
+    this.reTweets.remove(tweetId);
+    return this.save();
+}
+
+UserSchema.methods.isReTweeted = function(tweetId) {
+    return this.reTweets.indexOf(tweetId) === -1 ? false : true;
 }
 
 
