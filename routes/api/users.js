@@ -64,6 +64,31 @@ router.param('username', function(req, res, next, username) {
     }).catch(next);
 });
 
+
+
+router.get('/users/follow-suggestions', auth.required, function(req, res, next) {
+    //currently we are suggestion top 10 users.
+    User.findById(req.payload.id).then(function(user) {
+        if(!user) { return res.sendStatus(404); }
+
+        Promise.resolve(
+            User.find({_id:{$ne:user._id, $nin:user.following},}).
+            select({firstname:1,lastname:1,username:1,profile:1}).
+            limit(10).
+            sort('-followersCount')
+        ).then(function(users) {
+            return res.json({'suggestions':users.map( user => {
+                return {
+                    firstname:user.firstname,
+                    lastname:user.lastname,
+                    profile:user.profile,
+                    username:user.username
+                };
+            })});
+        });
+    });
+});
+
 /* GET user profile */
 
 router.get('/users/:username', auth.optional, function(req, res, next) {
@@ -145,7 +170,7 @@ router.put('/users/:username/follow', auth.required, function(req, res, next) {
         if(!user.isFollowing(req.user._id)) {
             user.addFollowing(req.user._id).then(function() {
                 req.user.addFollower(user._id).then(function() {
-                    return  res.json({ following: user.getFollowingCount() });
+                    return  res.json({ followingCount: user.getFollowingCount() });
                 });
             });
         }
@@ -163,15 +188,16 @@ router.delete('/users/:username/unfollow', auth.required, function(req, res, nex
         if(user.isFollowing(req.user._id)) {
             user.removeFollowing(req.user._id).then(function() {
                 req.user.removeFollower(user._id).then(function() {
-                    return res.json({ following:user.getFollowingCount() });
+                    return res.json({ followingCount:user.getFollowingCount() });
                 });
             });
         }
         else {
-            return res.json({ following:user.getFollowingCount });
+            return res.json({ followingCount:user.getFollowingCount });
         }
     }).catch(next);
 });
+
 
 /* router.put('/users/:username/block', auth.required, function(req, res, next) {
     User.findById(req.payload.id).then(function(user) {
