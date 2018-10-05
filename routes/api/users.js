@@ -198,6 +198,26 @@ router.delete('/users/:username/unfollow', auth.required, function(req, res, nex
     }).catch(next);
 });
 
+router.get('/users/:username/following',auth.optional ,function(req,res,next){
+    
+    Promise.all([
+        req.payload ? User.findById(req.payload.id) : null,
+        req.user.populate({path:'following'}).execPopulate()]
+    ).then(function(results) {
+        let loggedUser = results[0];
+        return res.json({'following':results[1].following.map(function(user) {
+            return {
+                username:user.username,
+                firstname:user.firstname,
+                lastname:user.lastname,
+                profile:user.profile,
+                isFollowing:loggedUser ? loggedUser.isFollowing(user._id):false
+            }
+        })});
+    }).catch(next);
+    
+})
+
 
 /* router.put('/users/:username/block', auth.required, function(req, res, next) {
     User.findById(req.payload.id).then(function(user) {
